@@ -49,7 +49,7 @@ select *, CASE
 ROUND(SAFE_DIVIDE(Income, Amount_Requested), 2) AS Income_to_Amount_Requested,
 TIMESTAMP_DIFF(CURRENT_DATE(), Previous_Assistance_Date, DAY) AS Time_Since_Previous_Assistance,
 IF(Previous_Assistance_Received_Raw, 1, 0) AS Previous_Assistance_Received,
-IF(Supporting_Doc_Verified_Raw, 1, 0) AS Supporting_Doc_Verified,
+IF(Supporting_Doc_Verified_Raw, 1, 0) AS Supporting_Doc_Verified
 from joinonehot
 )
 SELECT * EXCEPT(Previous_Assistance_Received_Raw, Supporting_Doc_Verified_Raw)
