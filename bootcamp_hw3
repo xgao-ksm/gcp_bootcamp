@@ -1,0 +1,44 @@
+--- Create schema for homework 3 if not exists
+create schema if not exists bootcamp_hw3;
+
+--- Load weather data
+load data into bootcamp_hw3.weather_data
+from files (
+format = 'csv',
+field_delimiter = ',',
+max_bad_records = 0,
+uris = ['gs://labs.roitraining.com/data-to-ai-workshop/weather_data.csv']
+);
+
+--- Create connection to Gemini
+CREATE OR REPLACE MODEL `bootcamp_hw3.gemini_model_20`
+REMOTE WITH CONNECTION DEFAULT
+OPTIONS (ENDPOINT = 'gemini-2.0-flash');
+
+--- Write sql to use ML.Generate_text create weather report
+CREATE OR REPLACE TABLE `bootcamp_hw3.weather_reports` AS
+SELECT
+  ml_generate_text_llm_result AS generated_text,
+  * 
+FROM ML.GENERATE_TEXT(
+  MODEL `bootcamp_hw3.gemini_model_20`,
+  (
+  SELECT *, CONCAT(
+        "Create a weather report based on the following parameters: ",
+        " Date: ", date,
+        ", City: ", city,
+        ", State: ", state,
+        ", Temperature (F): ", temperature_f,
+        ", Wind Speed (Mph): ", wind_speed_mph,
+        ", Precipitation (In): ", precipitation_in,
+        ", Barometric Pressure (Hg): ", barometric_pressure_inHg,
+        ", Humidity (%): ", humidity_percent,
+        ", Weather Condition: ", weather_condition
+      ) AS prompt
+      FROM `bootcamp_hw3.weather_data` 
+  ),
+    STRUCT(
+      TRUE  AS flatten_json_output,
+      1024 as max_output_tokens
+      )
+)
