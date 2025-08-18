@@ -1,0 +1,59 @@
+CREATE OR REPLACE TABLE `bootcamp_hw1.fraud_training_data` AS
+
+WITH base AS (
+  SELECT row_number() OVER() AS row_id, *
+  FROM `bootcamp_hw1.fraud_data_raw`
+)
+, 
+employment_status as (
+SELECT *
+FROM base
+PIVOT (
+  COUNT(Employment_Status) FOR Employment_Status IN ('Employed','Unemployed','Self-Employed')
+))
+, device_type as 
+(SELECT *
+FROM base
+PIVOT (
+  COUNT(Employment_Status) FOR Employment_Status IN ('Mobile','Tablet','Desktop')
+)),
+joinonehot as
+(
+select 
+dt.Mobile, dt.Tablet, dt.Desktop, es.Employed, es.Unemployed, es.`Self-Employed`, base.Applicant_ID
+, base.Age
+, base.Income
+,base.Number_of_Dependents
+, base.Amount_Requested
+, base.Previous_Assistance_Received as Previous_Assistance_Received_Raw
+, base.Previous_Assistance_Date 
+, base.Supporting_Doc_Verified as Supporting_Doc_Verified_Raw
+, base.Application_Frequency_Last_Year
+, base.IP_Address
+, base.Application_Date
+, base.Fraudulent
+from device_type dt
+left join employment_status es on dt.row_id=es.row_id
+left join base on es.row_id=base.row_id
+),
+final as (
+select *, CASE
+    WHEN age BETWEEN 18 AND 24 THEN '18-24'
+    WHEN age BETWEEN 25 AND 34 THEN '25-34'
+    WHEN age BETWEEN 35 AND 44 THEN '35-44'
+    WHEN age BETWEEN 45 AND 54 THEN '45-54'
+    WHEN age BETWEEN 55 AND 64 THEN '55-64'
+    WHEN age >= 65 THEN '65+'
+    ELSE 'Unknown'
+  END AS age_group,
+ROUND(SAFE_DIVIDE(Income, Amount_Requested), 2) AS Income_to_Amount_Requested,
+TIMESTAMP_DIFF(CURRENT_DATE(), Previous_Assistance_Date, DAY) AS Time_Since_Previous_Assistance,
+IF(Previous_Assistance_Received_Raw, 1, 0) AS Previous_Assistance_Received,
+IF(Supporting_Doc_Verified_Raw, 1, 0) AS Supporting_Doc_Verified,
+from joinonehot
+)
+SELECT * EXCEPT(Previous_Assistance_Received_Raw, Supporting_Doc_Verified_Raw)
+FROM final
+
+
+
