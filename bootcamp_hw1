@@ -1,3 +1,21 @@
+--- Create schema for homework1
+CREATE SCHEMA IF NOT EXISTS `bootcamp_hw1`
+OPTIONS (
+  location = "US",
+  default_table_expiration_days = 30,
+  description = "homework1"
+);
+
+-- create table
+load data into bootcamp_hw1.fraud_data_raw
+from files (
+  format='csv',
+  field_delimiter = ',',
+  max_bad_records = 0,
+  uris = ['gs://labs.roitraining.com/data-to-ai-workshop/fraud_data_raw.csv']
+);
+-- process table
+
 CREATE OR REPLACE TABLE `bootcamp_hw1.fraud_training_data` AS
 
 WITH base AS (
