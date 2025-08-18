@@ -1,0 +1,95 @@
+--- drop table if exist
+drop table if exists bootcamp_hw1.synthetic_calls;
+
+--- Create an empty table for predict
+CREATE TABLE if not exists bootcamp_hw1.synthetic_calls
+AS
+SELECT *
+FROM `bootcamp_hw1.emergency_calls_response_times`
+WHERE 1 = 0;
+
+--- insert 1 synthetic row
+INSERT INTO bootcamp_hw1.synthetic_calls (
+  call_id,
+  call_timestamp,
+  call_type,
+  location,
+  weather_condition,
+  day_of_week,
+  time_of_day,
+  traffic_level,
+  distance_to_station,
+  units_available,
+  response_time
+)
+SELECT
+  CAST(FLOOR(RAND() * 1000000) AS INT64) AS call_id, -- random id
+  TIMESTAMP('2023-01-01 00:20:47 UTC') AS call_timestamp, -- current time
+  'Fire' AS call_type,
+  'Highland' AS location,
+  'Rainy' AS weather_condition,
+  'Sunday' AS day_of_week, -- weekday from timestamp
+  0 AS time_of_day, -- hour of day
+  'High' as traffic_level,
+  12.4 AS distance_to_station, -- 0–20 km
+  6 AS units_available, -- 1–10 units
+  null as response_time
+;
+
+--- Load training data to table
+load data into bootcamp_hw1.emergency_calls_response_times
+from files (
+format = 'csv',
+field_delimiter = ',',
+max_bad_records = 0,
+uris = ['gs://labs.roitraining.com/data-to-ai-workshop/emergency_calls_response_times.csv']
+);
+
+--- create model
+CREATE OR REPLACE MODEL `bootcamp_hw1.response_model`
+OPTIONS(model_type='linear_reg', 
+DATA_SPLIT_METHOD='RANDOM', 
+MAX_ITERATIONS=50, 
+early_stop=TRUE,
+data_split_eval_fraction=0.2) 
+
+AS
+SELECT
+call_timestamp,
+call_type,
+location,
+weather_condition,
+day_of_week,
+time_of_day,
+traffic_level,
+distance_to_station,
+units_available,
+response_time as label
+FROM
+  `bootcamp_hw1.emergency_calls_response_times`;
+
+--- Evaluate model
+SELECT
+  *
+FROM
+  ML.EVALUATE(MODEL `bootcamp_hw1.response_model`);
+
+-- Predict on synthtic data
+SELECT *, ROUND(predicted_label, 2) as Predicted_response_time
+FROM
+  ML.PREDICT(MODEL `bootcamp_hw1.response_model`, (
+SELECT
+  call_timestamp,
+  call_type,
+  location,
+  weather_condition,
+  day_of_week,
+  time_of_day,
+  traffic_level,
+  distance_to_station,
+  units_available
+FROM
+  `bootcamp_hw1.synthetic_calls`
+  ))
+
+
