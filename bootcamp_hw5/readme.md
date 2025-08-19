@@ -29,5 +29,5 @@ Example1: Chicago Airport
 ![Looker Report Screenshot](looker_report_chicago_midway.png "Looker Report Example")
 
 Example2: Minneapolis Airport
-![Looker Report Screenshot](looker_report_saltlake_international.png "Looker Report Example")
+![Looker Report Screenshot](looker_report_minneapolis-saint.png "Looker Report Example")
 
