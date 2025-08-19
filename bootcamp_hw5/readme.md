@@ -25,5 +25,9 @@
 **Note:** Enable Google Chart cross-filtering. When a user clicks on a map point, the corresponding generated text in the table will update.
 
 I can not share the report link with student account, so report screen short is attached.
-
+Example1: Chicago Airport
 ![Looker Report Screenshot](looker_report_chicago_midway.png "Looker Report Example")
+
+Example2: Minneapolis Airport
+![Looker Report Screenshot](looker_report_saltlake_international.png "Looker Report Example")
+
