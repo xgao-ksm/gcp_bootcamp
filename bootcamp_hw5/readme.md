@@ -13,6 +13,8 @@
 - Create hourly scheduler
 - Check `scheduler_hourly.png` for details
 
+  ![Scheduler Screenshot](scheduler_hourly.png "Hourly Scheduler")
+
 ## Step 3: Report in Looker
 1. Generate a new column called `geopoint` using latitude and longitude
 2. Insert Google Map
@@ -23,3 +25,5 @@
 **Note:** Enable Google Chart cross-filtering. When a user clicks on a map point, the corresponding generated text in the table will update.
 
 I can not share the report link with student account, so report screen short is attached.
+
+![Looker Report Screenshot](looker_report_chicago_midway.png "Looker Report Example")
